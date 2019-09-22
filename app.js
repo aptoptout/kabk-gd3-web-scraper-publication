@@ -105,32 +105,97 @@ const app     = express();
 // });
 
 // STEP 5: Serving static html files
+// app.use(express.static('html'));
+// app.get('/scrape', function(req, res){
+//
+//   const root_url = 'https://en.wikipedia.org';
+//   const sub_url = '/wiki/Botany';
+//
+//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
+//   request(root_url+sub_url, function(error, response, html) {
+//     if(!error) {
+//
+//       const $ = cheerio.load(html);
+//       let data;
+//
+//       let data_store = {
+//         title: '',
+//         image: '',
+//         firstParagraph: '',
+//         firstUrl: ''
+//       };
+//
+//       // let's filter with cheerio to only get the content of the article
+//       $('#content').filter(function(){
+//         data_store.title = $(this).find('#firstHeading').text();
+//         data_store.image = $(this).find('#bodyContent').first().find('img').attr('src');
+//         data_store.firstParagraph = $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().text();
+//         data_store.firstUrl = root_url + $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().find('a').first().attr('href');
+//       });
+//
+//       // To write to the system we will use the built in 'fs' library.
+//       // In this example we will pass 3 parameters to the writeFile function
+//       // Parameter 1 :  output.json - this is what the created filename will be called
+//       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
+//       // Parameter 3 :  callback function - a callback function to let us know the status of our function
+//       fs.writeFile('./html/wiki_output.js', 'const output_data = ' + JSON.stringify(data_store, null, 4), function(err){
+//         console.log('File successfully written! - Check your project directory for the output.json file');
+//       });
+//
+//       res.send(data_store);
+//     }
+//   });
+// });
+
+// INSTAGRAM HASHTAG
+// app.use(express.static('html'));
+// app.get('/scrape', function(req, res){
+//
+//   const root_url = 'https://instagram.com';
+//   const hashtag = 'selfie';
+//   const sub_url = '/explore/tags/'+ hashtag +'/?__a=1';
+//
+//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
+//   request(root_url+sub_url, function(error, response, html) {
+//     if(!error) {
+//
+//       const $ = cheerio.load(html);
+//       let data_store = $.text();
+//
+//       // To write to the system we will use the built in 'fs' library.
+//       // In this example we will pass 3 parameters to the writeFile function
+//       // Parameter 1 :  output.json - this is what the created filename will be called
+//       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
+//       // Parameter 3 :  callback function - a callback function to let us know the status of our function
+//       fs.writeFile('./html/instagram_output.js', 'const output_data = ' + data_store, function(err){
+//         console.log('File successfully written! - Check your project directory for the output.json file');
+//       });
+//
+//       res.send(html);
+//     }
+//   });
+// });
+
+// IMDB
 app.use(express.static('html'));
 app.get('/scrape', function(req, res){
 
-  const root_url = 'https://en.wikipedia.org';
-  const sub_url = '/wiki/Botany';
+  const root_url = 'https://www.imdb.com';
+  const sub_url = '/chart/top?ref_=nv_mv_250';
 
   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
   request(root_url+sub_url, function(error, response, html) {
     if(!error) {
 
       const $ = cheerio.load(html);
-      let data;
 
-      let data_store = {
-        title: '',
-        image: '',
-        firstParagraph: '',
-        firstUrl: ''
-      };
+      let data_store = [];
 
       // let's filter with cheerio to only get the content of the article
-      $('#content').filter(function(){
-        data_store.title = $(this).find('#firstHeading').text();
-        data_store.image = $(this).find('#bodyContent').first().find('img').attr('src');
-        data_store.firstParagraph = $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().text();
-        data_store.firstUrl = root_url + $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().find('a').first().attr('href');
+      $('.lister').filter(function(){
+        $(this).find('tr').each(function(i, elem) {
+          data_store[i] = "'"+$(this).find('.posterColumn').find('img').attr('src')+"'";
+        });
       });
 
       // To write to the system we will use the built in 'fs' library.
@@ -138,7 +203,7 @@ app.get('/scrape', function(req, res){
       // Parameter 1 :  output.json - this is what the created filename will be called
       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
       // Parameter 3 :  callback function - a callback function to let us know the status of our function
-      fs.writeFile('./html/output.js', 'const output_data = ' + JSON.stringify(data_store, null, 4), function(err){
+      fs.writeFile('./html/imdb_output.js', 'const output_data = [' + data_store + ']', function(err){
         console.log('File successfully written! - Check your project directory for the output.json file');
       });
 
@@ -146,7 +211,6 @@ app.get('/scrape', function(req, res){
     }
   });
 });
-
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
