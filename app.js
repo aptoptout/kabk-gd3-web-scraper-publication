@@ -7,52 +7,115 @@ var fs = require('fs');
 var port = 2100;
 var app = express();
 
-// WIKIPEDIA
+// WIKIPEDIA SCRAPER: access by going to 'localhost:2100/wikipedia'
 app.get('/wikipedia', function(req, res) {
+
   var url = "https://en.wikipedia.org/wiki/Phyllotaxis";
+
+  // let's make the http request to the url above using the 'request' dependency
   request(url, function(error, response, html) {
+
+    // only execute if there's no error
     if( !error ){
+
+      // we can use the dependency 'cheerio' to traverse the DOM and use jQuery-like selectors and functions
+      var $ = cheerio.load(html);
+
+      // let's create a javascript object to save our data in
       var wiki_data = {
         title: '',
         img: '',
         paragraph: ''
       };
-      var $ = cheerio.load(html);
 
+      // all the content we are looking for are inside a div with the id 'content', let's filter so that the data we are working with is without unnecessary data
       $('#content').filter(function(){
+
+        // we can access the properties of our javascript object by writing the name of the object 'dot' and then the name of the property
         wiki_data.title = $(this).find('h1').text();
         wiki_data.img = $(this).find('img').attr('src');
         wiki_data.paragraph = $(this).find('p').first().text();
+
       });
+
+      // send the data we've stored in our object back to the browser
       res.send(wiki_data);
+
+      fs.writeFile('./data/wiki_output.js', "var wiki_output = " + wiki_data, function(error){
+        console.log("File is written successfully!");
+      });
     }
   });
 });
 
-// IMDB
+// IMDB SCRAPER: access by going to 'localhost:2100/imdb'
 app.get('/imdb', function(req, res) {
 
   var url = "https://www.imdb.com/chart/top";
 
+  // let's make the http request to the url above using the 'request' dependency
   request(url, function(error, response, html) {
 
-    if( !error ){
-      var imdb_data = [];
+    // only execute if there's no error
+    if(!error){
 
+      // we can use the dependency 'cheerio' to traverse the DOM and use jQuery-like selectors and functions
       var $ = cheerio.load(html);
 
-      $('.lister').filter(function(){
-        $(this).find('tr').each(function(i, element) {
+      var imdb_data = [];
 
-          imdb_data[i] = "'" + $(this).find('img').attr('src') + "'";
+      // all the content we are looking for are inside a div with the class 'lister', let's filter so that the data we are working with is without unnecessary data
+      $('.lister').filter(function(){
+
+        // there are a lot of 'tr' elements and for each of the 'tr' element we want to execute a function
+        $(this).find('tr').each(function(index, element) {
+
+          // the 'index' or the .each() function starts at 1, our array positions start counting from 0
+          var array_index = index - 1;
+
+          // get the url to which each image points to, this is in the 'src' attribute, also we need to wrap that inside quotes to be read properly later by our html
+          imdb_data[array_index] = "'" + $(this).find('img').attr('src') + "'";
 
         });
       });
 
+      // send the data we've stored in our array back to the browser
       res.send(imdb_data);
 
-      fs.writeFile('imdb_output.js', "var imdb_output = [" + imdb_data + "]" , function(error){
+      // save the data we've stored in our object on our machine
+      fs.writeFile('./data/imdb_output.js', "var imdb_output = [" + imdb_data + "]" , function(error){
         console.log("File is written successfully!");
+      });
+
+    }
+  });
+});
+
+// INSTAGRAM SCRAPER: access by going to 'localhost:2100/instagram'
+app.get('/instagram', function(req, res){
+
+  // try any hashtags and see the results, make sure to write INSIDE the quotation marks
+  var hashtag = 'selfie';
+  var url = 'https://instagram.com/explore/tags/'+ hashtag +'/?__a=1';
+
+  // let's make the http request to the url above using the 'request' dependency
+  request(root_url+sub_url, function(error, response, html) {
+
+    // only execute if there's no error
+    if(!error) {
+
+      // we can use the dependency 'cheerio' to traverse the DOM and use jQuery-like selectors and functions
+      var $ = cheerio.load(html);
+
+      // the url actually gives back already a ready to use JSON object so we just want that raw text
+      var instagram_data = $.text();
+
+      // send the data we've stored in our array back to the browser
+      res.send(instagram_data);
+
+      // save the data we've stored in our object on our machine
+      fs.writeFile('./data/instagram_output.js', 'var instagram_output = ' + instagram_data, function(err){
+        console.log('File is written successfully!');
       });
 
     }
@@ -62,231 +125,3 @@ app.get('/imdb', function(req, res) {
 app.listen(port);
 console.log('Magic happens on port ' + port);
 exports = module.exports = app;
-
-
-
-
-
-
-
-
-
-
-
-
-
-// IMDB
-// app.get('/imdb', function(req, res){
-//
-//   var url = 'https://en.wikipedia.org/wiki/Phyllotaxis';
-//
-//   request(url, function(error, response, html) {
-//
-//     if( !error ) {
-//       var $ = cheerio.load(html);
-//       var data = {
-//         articleTitle : '',
-//         articleImg : '',
-//         articleParagraph: ''
-//       };
-//
-//       $('#content').filter(function(){
-//         data.articleTitle = $(this).find('#firstHeading').text();
-//         data.articleImg = $(this).find('img').first().attr('src');
-//         data.articleParagraph = $(this).find('p:nth-of-type(2)').text();
-//       });
-//       res.send(data);
-//       fs.writeFile('wiki-output.js', JSON.stringify(data, null, 4), function(error){
-//         console.log('File written on hard drive!');
-//       });
-//     }
-//
-//   });
-// });
-//
-
-// STEP 2: requesting another url
-
-// STEP 3: Traversing the DOM
-// app.get('/', function(req, res){
-//
-//   const root_url = 'https://en.wikipedia.org';
-//   const sub_url = '/wiki/Phyllotaxis';
-//
-//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
-//   request(root_url+sub_url, function(error, response, html) {
-//     if(!error) {
-//
-//       const $ = cheerio.load(html);
-//       let data;
-//
-//       let data_store = {
-//         title: '',
-//         image: '',
-//         firstParagraph: '',
-//         firstUrl: ''
-//       };
-//
-//       // let's filter with cheerio to only get the content of the article
-//       $('#content').filter(function(){
-//         data_store.title = $(this).find('#firstHeading').text();
-//         data_store.image = $(this).find('img').attr('src');
-//         data_store.firstParagraph = $(this).find('p').first().text();
-//         data_store.firstUrl = root_url + $(this).find('p').first().find('a').first().attr('href');
-//       });
-//
-//       res.send(data_store);
-//     }
-//   });
-//
-// });
-
-// STEP 4: Formatting and saving to your hard drive
-// app.get('/', function(req, res){
-//
-//   const root_url = 'https://en.wikipedia.org';
-//   const sub_url = '/wiki/Botany';
-//
-//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
-//   request(root_url + sub_url, function(error, response, html) {
-//     if(!error) {
-//
-//       const $ = cheerio.load(html);
-//       let data;
-//
-//       let data_store = {
-//         title: '',
-//         image: '',
-//         firstParagraph: '',
-//         firstUrl: ''
-//       };
-//
-//       // let's filter with cheerio to only get the content of the article
-//       $('#content').filter(function(){
-//         data_store.title = $(this).find('#firstHeading').text();
-//         data_store.image = $(this).find('#bodyContent').first().find('img').attr('src');
-//         data_store.firstParagraph = $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().text();
-//         data_store.firstUrl = root_url + $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().find('a').first().attr('href');
-//       });
-//
-//       // To write to the system we will use the built in 'fs' library.
-//       // In this example we will pass 3 parameters to the writeFile function
-//       // Parameter 1 :  output.json - this is what the created filename will be called
-//       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
-//       // Parameter 3 :  callback function - a callback function to let us know the status of our function
-//       fs.writeFile('./html/output.js', 'const output_data = ' + JSON.stringify(data_store, null, 4), function(err){
-//         console.log('File successfully written! - Check your project directory for the output.json file');
-//       });
-//
-//       res.send(data_store);
-//     }
-//   });
-// });
-
-// STEP 5: Serving static html files
-// app.use(express.static('html'));
-// app.get('/scrape', function(req, res){
-//
-//   const root_url = 'https://en.wikipedia.org';
-//   const sub_url = '/wiki/Botany';
-//
-//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
-//   request(root_url+sub_url, function(error, response, html) {
-//     if(!error) {
-//
-//       const $ = cheerio.load(html);
-//       let data;
-//
-//       let data_store = {
-//         title: '',
-//         image: '',
-//         firstParagraph: '',
-//         firstUrl: ''
-//       };
-//
-//       // let's filter with cheerio to only get the content of the article
-//       $('#content').filter(function(){
-//         data_store.title = $(this).find('#firstHeading').text();
-//         data_store.image = $(this).find('#bodyContent').first().find('img').attr('src');
-//         data_store.firstParagraph = $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().text();
-//         data_store.firstUrl = root_url + $(this).find('#bodyContent').first().find('p').not('.mw-empty-elt').first().find('a').first().attr('href');
-//       });
-//
-//       // To write to the system we will use the built in 'fs' library.
-//       // In this example we will pass 3 parameters to the writeFile function
-//       // Parameter 1 :  output.json - this is what the created filename will be called
-//       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
-//       // Parameter 3 :  callback function - a callback function to let us know the status of our function
-//       fs.writeFile('./html/wiki_output.js', 'const output_data = ' + JSON.stringify(data_store, null, 4), function(err){
-//         console.log('File successfully written! - Check your project directory for the output.json file');
-//       });
-//
-//       res.send(data_store);
-//     }
-//   });
-// });
-
-// INSTAGRAM HASHTAG
-// app.use(express.static('html'));
-// app.get('/scrape', function(req, res){
-//
-//   const root_url = 'https://instagram.com';
-//   const hashtag = 'selfie';
-//   const sub_url = '/explore/tags/'+ hashtag +'/?__a=1';
-//
-//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
-//   request(root_url+sub_url, function(error, response, html) {
-//     if(!error) {
-//
-//       const $ = cheerio.load(html);
-//       let data_store = $.text();
-//
-//       // To write to the system we will use the built in 'fs' library.
-//       // In this example we will pass 3 parameters to the writeFile function
-//       // Parameter 1 :  output.json - this is what the created filename will be called
-//       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
-//       // Parameter 3 :  callback function - a callback function to let us know the status of our function
-//       fs.writeFile('./html/instagram_output.js', 'const output_data = ' + data_store, function(err){
-//         console.log('File successfully written! - Check your project directory for the output.json file');
-//       });
-//
-//       res.send(html);
-//     }
-//   });
-// });
-
-// IMDB
-// app.use(express.static('html'));
-// app.get('/scrape', function(req, res){
-//
-//   const root_url = 'https://www.imdb.com';
-//   const sub_url = '/chart/top?ref_=nv_mv_250';
-//
-//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
-//   request(root_url+sub_url, function(error, response, html) {
-//     if(!error) {
-//
-//       const $ = cheerio.load(html);
-//
-//       let data_store = [];
-//
-//       // let's filter with cheerio to only get the content of the article
-//       $('.lister').filter(function(){
-//         $(this).find('tr').each(function(i, elem) {
-//           data_store[i] = "'"+$(this).find('.posterColumn').find('img').attr('src')+"'";
-//         });
-//       });
-//
-//       // To write to the system we will use the built in 'fs' library.
-//       // In this example we will pass 3 parameters to the writeFile function
-//       // Parameter 1 :  output.json - this is what the created filename will be called
-//       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
-//       // Parameter 3 :  callback function - a callback function to let us know the status of our function
-//       fs.writeFile('./html/imdb_output.js', 'const output_data = [' + data_store + ']', function(err){
-//         console.log('File successfully written! - Check your project directory for the output.json file');
-//       });
-//
-//       res.send(data_store);
-//     }
-//   });
-// });
