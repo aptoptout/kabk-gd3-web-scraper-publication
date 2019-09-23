@@ -6,15 +6,39 @@
     <style type="text/css">
         body {
             display: flex;
+            width: 100%;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
         }
         .link {
+            display: flex;
             flex: 1 0;
             height: 100%;
+            background-color: lightgray;
+        }
+        .link:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+            text-decoration: underline;
+        }
+        span {
+            font-family: 'helvetica', sans-serif;
+            font-size: 24px;
+            margin: auto;
+        }
+        .yellow {
+            color: rgb(255, 255, 0);
+        }
+        .blue {
+            color: rgb(255, 0, 255);
+        }
+        .red {
+            color: rgb(255, 255, 0);
         }
     </style>
     <body>
-        <div class="link">Wikipedia</div>
-        <div class="link">IMDB</div>
-        <div class="link">Instagram</div>
+    <div class="link blue"><span><a href="wikipedia.html">Wikipedia</a></span></div>
+    <div class="link yellow"><span><a href="imdb.html">IMDB</a></span></div>
+    <div class="link red"><span><a href="instagram.html">Instagram</a></span></div>
     </body>
 </html>
