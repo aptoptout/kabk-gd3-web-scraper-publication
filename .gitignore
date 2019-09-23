@@ -1,3 +1,4 @@
+# Things GitHub should ignore
 # dependencies
 node_modules
 _dist
