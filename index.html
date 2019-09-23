@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script type="text/javascript" src="imdb_output.js"></script>
+
+    <script type="text/javascript" src="imdb-output.js"></script>
+    
     <script type="text/javascript" >
-        function load() {
+        function loadIMDB() {
             const div = document.getElementById('data');
 
-            for(let i = 0; i < output_data.length; i++) {
-                if(!(output_data[i] === "undefined")) {
-                    img = "<img class='tile' src='" + output_data[i] + "'>";
+            for(let i = 0; i < imdb_list.length; i++) {
+
+                if(!(imdb_list[i] === "undefined")) {
+
+                    img = "<img class='tile' src='" + imdb_list[i] + "'>";
                     div.innerHTML = div.innerHTML + img;
+
                 }
+
             }
 
         }
@@ -22,8 +28,9 @@
             margin: 5px;
         }
     </style>
+
 </head>
-<body onload="load()">
+<body onload="loadIMDB()">
 <div id="data"></div>
 </body>
 </html>

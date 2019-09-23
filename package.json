@@ -1,9 +1,9 @@
 {
-	"name": "my-first-web-scraper",
+	"name": "",
 	"version": "0.0.1",
-	"homepage": "https://github.com/aptoptout/online-data-scraper-publication",
-	"description": "A tool for fetching web data and outputting the result in a web page or other file",
-	"author": "Martijn de Heer",
+	"homepage": "",
+	"description": "",
+	"author": "",
 	"main": "app.js",
 	"dependencies": {
 		"nodemon": "latest",

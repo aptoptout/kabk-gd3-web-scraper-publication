@@ -1,32 +1,76 @@
-const express = require('express');
-const request = require('request');
-const cheerio = require('cheerio');
-const fs = require('fs');
+// Storing dependencies into a variable
+var express = require('express');
+var request = require('request');
+var cheerio = require('cheerio');
+var fs = require('fs');
 
-const port = 3000;
-const app     = express();
+// Storing port number and our full app
+var port = 8081;
+var app = express();
 
-// STEP 1: Setting up the boilerplate and routing
-// app.get('/', function(req, res){
-//
-//   //All the web scraping magic will happen here
-//   res.send('Hello World!');
-//
-// });
+app.get('/wikipedia', function(req, res){
+  var url = 'https://en.wikipedia.org/wiki/Phyllotaxis';
+  request(url, function(error, response, html) {
 
-// STEP 2: Making a request to another URL
-// app.get('/', function(req, res){
-//
-//   const url = 'https://en.wikipedia.org/wiki/Phyllotaxis';
-//
-//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
-//   request(url, function(error, response, html) {
-//     if(!error) {
-//       res.send(html);
-//     }
-//   });
-//
-// });
+    if( !error ) {
+      var $ = cheerio.load(html);
+      var data = {
+        articleTitle : '',
+        articleImg : '',
+        articleParagraph: ''
+      };
+      $('#content').filter(function(){
+        data.articleTitle = $(this).find('#firstHeading').text();
+        data.articleImg = $(this).find('img').first().attr('src');
+        data.articleParagraph = $(this).find('p:nth-of-type(2)').text();
+      });
+      res.send(data);
+
+      fs.writeFile('wiki-output.js', JSON.stringify(data, null, 4), function(error){
+        console.log('File written on hard drive!');
+      });
+
+    }
+  });
+});
+
+app.get('/imdb', function(req, res){
+
+  var url = 'https://www.imdb.com/chart/top';
+
+  request(url, function(error, response, html) {
+
+    if( !error ) {
+      var $ = cheerio.load(html);
+
+      var data = [];
+
+      $('.lister-list').filter(function(){
+        $(this).find('tr').each(function(i, elem){
+          data[i] = "'" + $(this).find('.posterColumn').find('img').attr('src') + "'";
+        });
+      });
+
+      res.send(data);
+
+      fs.writeFile('imdb-output.js', 'var imdb_list = [' + data + ']', function(error){
+        console.log('File written on hard drive!');
+      });
+    }
+
+  });
+});
+
+app.listen(port);
+console.log('Magic happens on port ' + port);
+exports = module.exports = app;
+
+
+
+
+
+
+
 
 // STEP 3: Traversing the DOM
 // app.get('/', function(req, res){
@@ -177,42 +221,37 @@ const app     = express();
 // });
 
 // IMDB
-app.use(express.static('html'));
-app.get('/scrape', function(req, res){
-
-  const root_url = 'https://www.imdb.com';
-  const sub_url = '/chart/top?ref_=nv_mv_250';
-
-  // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
-  request(root_url+sub_url, function(error, response, html) {
-    if(!error) {
-
-      const $ = cheerio.load(html);
-
-      let data_store = [];
-
-      // let's filter with cheerio to only get the content of the article
-      $('.lister').filter(function(){
-        $(this).find('tr').each(function(i, elem) {
-          data_store[i] = "'"+$(this).find('.posterColumn').find('img').attr('src')+"'";
-        });
-      });
-
-      // To write to the system we will use the built in 'fs' library.
-      // In this example we will pass 3 parameters to the writeFile function
-      // Parameter 1 :  output.json - this is what the created filename will be called
-      // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
-      // Parameter 3 :  callback function - a callback function to let us know the status of our function
-      fs.writeFile('./html/imdb_output.js', 'const output_data = [' + data_store + ']', function(err){
-        console.log('File successfully written! - Check your project directory for the output.json file');
-      });
-
-      res.send(data_store);
-    }
-  });
-});
-
-app.listen(port);
-console.log('Magic happens on port ' + port);
-
-exports = module.exports = app;
+// app.use(express.static('html'));
+// app.get('/scrape', function(req, res){
+//
+//   const root_url = 'https://www.imdb.com';
+//   const sub_url = '/chart/top?ref_=nv_mv_250';
+//
+//   // structure of our request call is: first parameter is URL with a callback function that has 3 parameters
+//   request(root_url+sub_url, function(error, response, html) {
+//     if(!error) {
+//
+//       const $ = cheerio.load(html);
+//
+//       let data_store = [];
+//
+//       // let's filter with cheerio to only get the content of the article
+//       $('.lister').filter(function(){
+//         $(this).find('tr').each(function(i, elem) {
+//           data_store[i] = "'"+$(this).find('.posterColumn').find('img').attr('src')+"'";
+//         });
+//       });
+//
+//       // To write to the system we will use the built in 'fs' library.
+//       // In this example we will pass 3 parameters to the writeFile function
+//       // Parameter 1 :  output.json - this is what the created filename will be called
+//       // Parameter 2 :  JSON.stringify(json, null, 4) - the data to write, here we do an extra step by calling JSON.stringify to make our JSON easier to read
+//       // Parameter 3 :  callback function - a callback function to let us know the status of our function
+//       fs.writeFile('./html/imdb_output.js', 'const output_data = [' + data_store + ']', function(err){
+//         console.log('File successfully written! - Check your project directory for the output.json file');
+//       });
+//
+//       res.send(data_store);
+//     }
+//   });
+// });
