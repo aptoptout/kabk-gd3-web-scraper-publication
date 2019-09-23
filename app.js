@@ -1,64 +1,15 @@
-// Storing dependencies into a variable
 var express = require('express');
 var request = require('request');
 var cheerio = require('cheerio');
 var fs = require('fs');
 
-// Storing port number and our full app
 var port = 8081;
 var app = express();
 
-app.get('/wikipedia', function(req, res){
-  var url = 'https://en.wikipedia.org/wiki/Phyllotaxis';
-  request(url, function(error, response, html) {
+app.get('/', function(req, res) {
 
-    if( !error ) {
-      var $ = cheerio.load(html);
-      var data = {
-        articleTitle : '',
-        articleImg : '',
-        articleParagraph: ''
-      };
-      $('#content').filter(function(){
-        data.articleTitle = $(this).find('#firstHeading').text();
-        data.articleImg = $(this).find('img').first().attr('src');
-        data.articleParagraph = $(this).find('p:nth-of-type(2)').text();
-      });
-      res.send(data);
+  res.send('Hello World!')
 
-      fs.writeFile('wiki-output.js', JSON.stringify(data, null, 4), function(error){
-        console.log('File written on hard drive!');
-      });
-
-    }
-  });
-});
-
-app.get('/imdb', function(req, res){
-
-  var url = 'https://www.imdb.com/chart/top';
-
-  request(url, function(error, response, html) {
-
-    if( !error ) {
-      var $ = cheerio.load(html);
-
-      var data = [];
-
-      $('.lister-list').filter(function(){
-        $(this).find('tr').each(function(i, elem){
-          data[i] = "'" + $(this).find('.posterColumn').find('img').attr('src') + "'";
-        });
-      });
-
-      res.send(data);
-
-      fs.writeFile('imdb-output.js', 'var imdb_list = [' + data + ']', function(error){
-        console.log('File written on hard drive!');
-      });
-    }
-
-  });
 });
 
 app.listen(port);
@@ -67,10 +18,37 @@ exports = module.exports = app;
 
 
 
+// IMDB
+// app.get('/imdb', function(req, res){
+//
+//   var url = 'https://en.wikipedia.org/wiki/Phyllotaxis';
+//
+//   request(url, function(error, response, html) {
+//
+//     if( !error ) {
+//       var $ = cheerio.load(html);
+//       var data = {
+//         articleTitle : '',
+//         articleImg : '',
+//         articleParagraph: ''
+//       };
+//
+//       $('#content').filter(function(){
+//         data.articleTitle = $(this).find('#firstHeading').text();
+//         data.articleImg = $(this).find('img').first().attr('src');
+//         data.articleParagraph = $(this).find('p:nth-of-type(2)').text();
+//       });
+//       res.send(data);
+//       fs.writeFile('wiki-output.js', JSON.stringify(data, null, 4), function(error){
+//         console.log('File written on hard drive!');
+//       });
+//     }
+//
+//   });
+// });
+//
 
-
-
-
+// STEP 2: requesting another url
 
 // STEP 3: Traversing the DOM
 // app.get('/', function(req, res){
