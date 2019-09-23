@@ -41,7 +41,7 @@ app.get('/wikipedia', function(req, res) {
       // send the data we've stored in our object back to the browser
       res.send(wiki_data);
 
-      fs.writeFile('./data/wiki_output.js', "var wiki_output = " + wiki_data, function(error){
+      fs.writeFile('./data/wiki_output.js', "var wiki_output = " + JSON.stringify(wiki_data), function(error){
         console.log("File is written successfully!");
       });
     }
@@ -99,7 +99,7 @@ app.get('/instagram', function(req, res){
   var url = 'https://instagram.com/explore/tags/'+ hashtag +'/?__a=1';
 
   // let's make the http request to the url above using the 'request' dependency
-  request(root_url+sub_url, function(error, response, html) {
+  request(url, function(error, response, html) {
 
     // only execute if there's no error
     if(!error) {
