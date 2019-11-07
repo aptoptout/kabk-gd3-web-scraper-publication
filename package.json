@@ -1,5 +1,5 @@
 {
-	"name": "",
+	"name": "web-scraper",
 	"version": "0.0.1",
 	"homepage": "",
 	"description": "",
@@ -9,6 +9,7 @@
 		"nodemon": "latest",
 		"express": "latest",
 		"request": "latest",
-		"cheerio": "latest"
+		"cheerio": "latest",
+		"twitter": "latest"
 	}
 }
